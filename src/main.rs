@@ -27,13 +27,34 @@ fn get_repo() -> Result<Repository, &'static str> {
     Repository::open(repo_directory).map_err(|_| "Error opening repository")
 }
 
-#[derive(Debug)]
-struct File {
+#[derive(Debug, Clone)]
+struct RepoFile {
     status: Delta,
     path: PathBuf,
 }
 
-fn get_modified_files(repo: &Repository) -> Result<Vec<File>, &'static str> {
+fn sort_repo_files_by_status(mut files: Vec<RepoFile>) -> Vec<RepoFile> {
+    files.sort_by(|a, b| {
+        let status_to_ord = |status: &Delta| match status {
+            Delta::Unmodified => 0,
+            Delta::Ignored => 1,
+            Delta::Untracked => 2,
+            Delta::Added => 3,
+            Delta::Deleted => 4,
+            Delta::Modified => 5,
+            Delta::Renamed => 6,
+            Delta::Copied => 7,
+            Delta::Typechange => 8,
+            Delta::Unreadable => 9,
+            Delta::Conflicted => 10,
+        };
+        status_to_ord(&a.status).cmp(&status_to_ord(&b.status))
+    });
+
+    files
+}
+
+fn get_modified_files(repo: &Repository) -> Result<Vec<RepoFile>, &'static str> {
     let mut modified_files = Vec::new();
 
     let diffs = repo
@@ -45,7 +66,7 @@ fn get_modified_files(repo: &Repository) -> Result<Vec<File>, &'static str> {
             &mut |delta, _| {
                 if let Some(path) = delta.new_file().path() {
                     let status = delta.status();
-                    modified_files.push(File {
+                    modified_files.push(RepoFile {
                         status,
                         path: path.to_path_buf(),
                     });
@@ -58,7 +79,7 @@ fn get_modified_files(repo: &Repository) -> Result<Vec<File>, &'static str> {
         )
         .map_err(|_| "Error iterating over diff")?;
 
-    Ok(modified_files)
+    Ok(sort_repo_files_by_status(modified_files))
 }
 
 fn main() {
