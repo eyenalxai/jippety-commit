@@ -1,8 +1,10 @@
-use crate::models::RepoFile;
-use crate::utils::sort_repo_files_by_status;
-use git2::{DiffOptions, Repository};
 use std::env;
 use std::path::{Path, PathBuf};
+
+use git2::{DiffOptions, Repository};
+
+use crate::models::RepoFile;
+use crate::utils::sort_repo_files_by_status;
 
 fn find_git_directory(start_path: &Path) -> Option<PathBuf> {
     let mut current_path = start_path.to_path_buf();
@@ -28,7 +30,9 @@ pub fn get_repo() -> Result<Repository, &'static str> {
     Repository::open(repo_directory).map_err(|_| "Error opening repository")
 }
 
-pub fn get_modified_files(repo: &Repository) -> Result<Vec<RepoFile>, &'static str> {
+pub fn get_modified_files() -> Result<Vec<RepoFile>, &'static str> {
+    let repo = get_repo().map_err(|_| "Error getting repository")?;
+
     let mut modified_files = Vec::new();
 
     let diffs = repo

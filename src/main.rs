@@ -1,19 +1,11 @@
-use crate::git::{get_modified_files, get_repo};
+use crate::git::get_modified_files;
 
 mod git;
 mod models;
 mod utils;
 
 fn main() {
-    let repo = match get_repo() {
-        Ok(repo) => repo,
-        Err(e) => {
-            eprintln!("Error: {}", e);
-            return;
-        }
-    };
-
-    let modified_files = match get_modified_files(&repo) {
+    let modified_files = match get_modified_files() {
         Ok(files) => files,
         Err(e) => {
             eprintln!("Error: {}", e);
