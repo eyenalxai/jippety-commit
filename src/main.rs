@@ -1,16 +1,15 @@
-use crate::utils::get_concatenated_diffs;
+use std::process::Command;
 
-mod git;
-mod utils;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let output = Command::new("git")
+        .args(["diff", "--staged", "--minimal"])
+        .output()?;
 
-fn main() {
-    let patches = match get_concatenated_diffs() {
-        Ok(patches) => patches,
-        Err(e) => {
-            eprintln!("Error: {}", e);
-            return;
-        }
-    };
+    if !output.status.success() {
+        eprintln!("Failed to run git diff");
+        std::process::exit(1);
+    }
 
-    println!("{}", patches)
+    println!("{}", String::from_utf8(output.stdout)?);
+    Ok(())
 }
