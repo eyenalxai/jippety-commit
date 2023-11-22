@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use git2::{DiffOptions, Repository};
 
-use crate::utils::patch_to_string;
+use crate::utils::diff_to_string;
 
 fn find_git_directory(start_path: &Path) -> Option<PathBuf> {
     let mut current_path = start_path.to_path_buf();
@@ -51,12 +51,12 @@ pub fn get_repo_files_diffs() -> Result<Vec<String>, &'static str> {
         .foreach(
             &mut |delta, _| {
                 if let Some(path) = delta.new_file().path() {
-                    if let Ok(patch) = repo.diff_tree_to_workdir_with_index(
+                    if let Ok(diff) = repo.diff_tree_to_workdir_with_index(
                         Some(&tree),
                         Some(&mut DiffOptions::new().pathspec(path)),
                     ) {
-                        if let Ok(patch_str) = patch_to_string(&patch) {
-                            files_diffs.push(patch_str);
+                        if let Ok(diff_str) = diff_to_string(&diff) {
+                            files_diffs.push(diff_str);
                         }
                     }
                 }

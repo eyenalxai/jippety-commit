@@ -1,18 +1,16 @@
-use crate::git::get_repo_files_diffs;
+use crate::utils::get_concatenated_diffs;
 
 mod git;
 mod utils;
 
 fn main() {
-    let diffs = match get_repo_files_diffs() {
-        Ok(files) => files,
+    let patches = match get_concatenated_diffs() {
+        Ok(patches) => patches,
         Err(e) => {
             eprintln!("Error: {}", e);
             return;
         }
     };
 
-    diffs.iter().for_each(|f| {
-        println!("{}: \n\n\n", f);
-    })
+    println!("{}", patches)
 }
