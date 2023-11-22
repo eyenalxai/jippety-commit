@@ -1,11 +1,10 @@
-use crate::git::get_modified_files;
+use crate::git::get_repo_files_diffs;
 
 mod git;
-mod models;
 mod utils;
 
 fn main() {
-    let modified_files = match get_modified_files() {
+    let modified_files = match get_repo_files_diffs() {
         Ok(files) => files,
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -13,7 +12,7 @@ fn main() {
         }
     };
 
-    modified_files
-        .iter()
-        .for_each(|f| println!("{:?}: {}", f.status, f.path.display()))
+    modified_files.iter().for_each(|f| {
+        println!("{}: \n\n\n", f);
+    })
 }

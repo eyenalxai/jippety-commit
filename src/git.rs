@@ -3,8 +3,7 @@ use std::path::{Path, PathBuf};
 
 use git2::{DiffOptions, Repository};
 
-use crate::models::RepoFile;
-use crate::utils::sort_repo_files_by_status;
+use crate::utils::patch_to_string;
 
 fn find_git_directory(start_path: &Path) -> Option<PathBuf> {
     let mut current_path = start_path.to_path_buf();
@@ -30,24 +29,36 @@ pub fn get_repo() -> Result<Repository, &'static str> {
     Repository::open(repo_directory).map_err(|_| "Error opening repository")
 }
 
-pub fn get_modified_files() -> Result<Vec<RepoFile>, &'static str> {
+pub fn get_repo_files_diffs() -> Result<Vec<String>, &'static str> {
     let repo = get_repo().map_err(|_| "Error getting repository")?;
 
-    let mut modified_files = Vec::new();
+    let mut opts = DiffOptions::new();
+    opts.include_untracked(true).recurse_untracked_dirs(true);
+
+    let head = repo.head().map_err(|_| "Error getting HEAD")?;
+    let head_commit = head
+        .peel_to_commit()
+        .map_err(|_| "Error getting HEAD commit")?;
+    let tree = head_commit.tree().map_err(|_| "Error getting HEAD tree")?;
 
     let diffs = repo
-        .diff_index_to_workdir(None, Some(DiffOptions::new().include_untracked(true)))
-        .map_err(|_| "Error getting diff")?;
+        .diff_tree_to_index(Some(&tree), None, Some(&mut opts))
+        .map_err(|_| "Error getting diff between HEAD and index")?;
+
+    let mut files_diffs = Vec::new();
 
     diffs
         .foreach(
             &mut |delta, _| {
                 if let Some(path) = delta.new_file().path() {
-                    let status = delta.status();
-                    modified_files.push(RepoFile {
-                        status,
-                        path: path.to_path_buf(),
-                    });
+                    if let Ok(patch) = repo.diff_tree_to_workdir_with_index(
+                        Some(&tree),
+                        Some(&mut DiffOptions::new().pathspec(path)),
+                    ) {
+                        if let Ok(patch_str) = patch_to_string(&patch) {
+                            files_diffs.push(patch_str);
+                        }
+                    }
                 }
                 true
             },
@@ -55,7 +66,7 @@ pub fn get_modified_files() -> Result<Vec<RepoFile>, &'static str> {
             None,
             None,
         )
-        .map_err(|_| "Error iterating over diff")?;
+        .map_err(|_| "Error iterating over diffs")?;
 
-    Ok(sort_repo_files_by_status(modified_files))
+    Ok(files_diffs)
 }
