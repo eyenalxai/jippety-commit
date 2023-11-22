@@ -1,4 +1,4 @@
-# Jippety-Kohmmit
+# Jippety Commit
 
 A Rust CLI tool for generating conventional commit messages using OpenAI's GPT-4 Turbo model.
 
@@ -7,14 +7,14 @@ A Rust CLI tool for generating conventional commit messages using OpenAI's GPT-4
 Clone the repository and build the project using Cargo:
 
 ```bash
-git clone https://github.com/username/jippety-kohmmit.git
-cd jippety-kohmmit
+git clone https://github.com/username/jippety-commit.git
+cd jippety-commit
 cargo build --release
 ```
 
 ## Configuration
 
-Place a `config.toml` in your home directory under `~/.config/jippety-kohmmit/` with the following structure:
+Place a `config.toml` in your home directory under `~/.config/jippety-commit/` with the following structure:
 
 ```toml
 openai_api_key = "sk-yourapikey..."

@@ -5,7 +5,7 @@ use dirs::home_dir;
 
 use crate::models::Config;
 
-const CONFIG_LOCATION: &str = ".config/jippety-kohmmit/config.toml";
+const CONFIG_LOCATION: &str = ".config/jippety-commit/config.toml";
 
 fn get_config() -> Result<Config, Box<dyn Error>> {
     let home_folder = home_dir().ok_or("Home directory not found")?;
