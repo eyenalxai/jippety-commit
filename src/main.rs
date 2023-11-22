@@ -1,15 +1,21 @@
+use std::error::Error;
 use std::process::Command;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn get_diff() -> Result<String, Box<dyn Error>> {
     let output = Command::new("git")
         .args(["diff", "--staged", "--minimal"])
         .output()?;
 
     if !output.status.success() {
-        eprintln!("Failed to run git diff");
-        std::process::exit(1);
+        return Err("Failed to execute git diff".into());
     }
 
-    println!("{}", String::from_utf8(output.stdout)?);
+    Ok(String::from_utf8(output.stdout)?)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let diff = get_diff()?;
+
+    println!("{}", diff);
     Ok(())
 }
