@@ -1,6 +1,6 @@
 # Jippety-Kohmmit
 
-A Rust CLI tool for generating conventional commit messages using OpenAI's GPT-4 turbo model.
+A Rust CLI tool for generating conventional commit messages using OpenAI's GPT-4 Turbo model.
 
 ## Installation
 
